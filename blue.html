@@ -99,7 +99,7 @@ function start(name){
 function confirmReps(){const item=queue[index];const reps=parseInt($('reps').value,10);if(!reps)return;if(item.weight==null){$('target').textContent='Set the weight with +5 / −5 first.';return;}state.sets.push({date:today(),session:item.session,exercise:item.name,set:item.set,weight:item.weight,reps});state.weights[item.name]=item.weight;index++;saveActive();if(index>=queue.length){$('title').textContent='Saved on this device';state.active=null;save();return;}const next=queue[index];$('nextName').textContent=next.name+' · set '+next.set;$('restOverlay').classList.remove('hidden');remaining=queue[index-1].rest;tick();timerId=setInterval(tick,1000);}
 function tick(){const m=Math.floor(remaining/60),s=remaining%60;$('timer').textContent=m+':'+String(s).padStart(2,'0');if(remaining<=0){clearInterval(timerId);timerId=null;$('timer').textContent='Lift';alarm(queue[index]&&queue[index].name);return;}remaining--;}
 function showLog(){const days=Object.keys(state.days).sort().reverse();$('dailyList').innerHTML=days.length?days.map(date=>{const d=state.days[date];return '<div class="entry"><b>'+date+' · daily</b><div>Weight '+(d.bodyWeight||'—')+' lb · Steps '+(d.steps||'—')+'</div></div>';}).join(''):'';const rows=state.sets;$('logList').innerHTML=rows.length?rows.map((s,i)=>'<div class="entry"><b>'+s.date+' · '+s.session+' · '+s.exercise+' · set '+s.set+'</b><div class="editrow"><input id="w'+i+'" inputmode="numeric" value="'+s.weight+'"><input id="r'+i+'" inputmode="numeric" value="'+s.reps+'"><button class="save" type="button" data-i="'+i+'">Save</button><button class="del" type="button" data-i="'+i+'">Delete</button></div></div>').join(''):'<p class="note">No sets yet.</p>';$('logOverlay').classList.remove('hidden');}
-function showEdit(){let html='';Object.keys(PROGRAM).forEach(day=>{html+='<div class="dayblock"><h2>'+day+'</h2>';PROGRAM[day].exercises.forEach((ex,i)=>{html+='<div class="editrow"><div class="updown"><button type="button" data-action="up" data-day="'+day+'" data-i="'+i+'">↑</button><button type="button" data-action="down" data-day="'+day+'" data-i="'+i+'">↓</button></div><input class="namebox" data-day="'+day+'" data-i="'+i+'" data-field="name" value="'+ex[0].replace(/"/g,'')+'"><input data-day="'+day+'" data-i="'+i+'" data-field="sets" inputmode="numeric" value="'+ex[1]+'"></div>';});html+='<button class="link add" type="button" data-day="'+day+'">Add exercise</button></div>';});$('editList').innerHTML=html;$('editOverlay').classList.remove('hidden');}
+function showEdit(){let html='';Object.keys(PROGRAM).forEach(day=>{html+='<div class="dayblock"><div class="editrow" style="margin-bottom:8px"><input class="namebox" data-day="'+day+'" data-field="workoutname" value="'+day.replace(/"/g,'')+'" placeholder="Workout name"><button type="button" class="save" data-action="rename" data-day="'+day+'">Rename</button></div><h2>'+day+'</h2>';PROGRAM[day].exercises.forEach((ex,i)=>{html+='<div class="editrow"><div class="updown"><button type="button" data-action="up" data-day="'+day+'" data-i="'+i+'">↑</button><button type="button" data-action="down" data-day="'+day+'" data-i="'+i+'">↓</button></div><input class="namebox" data-day="'+day+'" data-i="'+i+'" data-field="name" value="'+ex[0].replace(/"/g,'')+'"><input data-day="'+day+'" data-i="'+i+'" data-field="sets" inputmode="numeric" value="'+ex[1]+'"><button type="button" class="del" data-action="del" data-day="'+day+'" data-i="'+i+'">Del</button></div>';});html+='<button class="link add" type="button" data-day="'+day+'">Add exercise</button></div>';});$('editList').innerHTML=html;$('editOverlay').classList.remove('hidden');}
 function readEdit(){document.querySelectorAll('#editList input').forEach(input=>{const day=input.dataset.day,i=Number(input.dataset.i),ex=PROGRAM[day].exercises[i];if(!ex)return;if(input.dataset.field==='name')ex[0]=input.value||ex[0];if(input.dataset.field==='sets')ex[1]=Math.max(1,parseInt(input.value,10)||1);});}
 function download(){const lines=['Date,Type,Session,Exercise,Set,Weight,Reps,Steps'];Object.keys(state.days).sort().forEach(date=>{const d=state.days[date];lines.push([date,'daily','','','',d.bodyWeight||'','',d.steps||''].join(','));});state.sets.forEach(s=>lines.push([s.date,'set',s.session,'"'+s.exercise+'"',s.set,s.weight,s.reps,''].join(',')));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv'}));a.download='garage-log.csv';a.click();}
 $('saveDaily').onclick=()=>{const bodyWeight=$('bodyWeight').value.trim(),steps=$('steps').value.trim();if(!bodyWeight&&!steps){$('dailyNote').textContent='Nothing entered.';return;}state.days[today()]={bodyWeight,steps};save();$('dailyNote').textContent='Saved for '+today();};
@@ -118,6 +118,22 @@ $('editList').onclick=e=>{
     const arr=PROGRAM[day].exercises;
     [arr[i],arr[i+1]]=[arr[i+1],arr[i]];
     showEdit();return;
+  }
+  if(action==='del'&&PROGRAM[day]&&PROGRAM[day].exercises.length>1){
+    PROGRAM[day].exercises.splice(i,1);
+    showEdit();return;
+  }
+  if(action==='rename'){
+    const input=document.querySelector('#editList input[data-day="'+day+'"][data-field="workoutname"]');
+    const newName=(input&&input.value.trim())||day;
+    if(newName&&newName!==day&&!PROGRAM[newName]){
+      PROGRAM[newName]=PROGRAM[day];
+      delete PROGRAM[day];
+      // also update any active session if it matches
+      if(state.active&&state.active.name===day) state.active.name=newName;
+      showEdit();
+    }
+    return;
   }
   if(b.classList.contains('add')){
     PROGRAM[day].exercises.push(['New exercise',2,90]);
