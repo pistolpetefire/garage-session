@@ -200,17 +200,32 @@ function showProgress(){
     const weightDates=dates.filter(d=>state.days[d].bodyWeight);
     const wNote=$('weightNote');
     if(weightChart){weightChart.destroy();weightChart=null;}
-    if(weightDates.length && typeof Chart!=='undefined'){
+    if(weightDates.length){
       wNote.style.display='none';
       const canvas=$('weightChart');
       canvas.style.display='block';
       canvas.style.height='180px';
-      const ctx=canvas.getContext('2d');
-      weightChart=new Chart(ctx,{
-        type:'line',
-        data:{labels:weightDates,datasets:[{label:'Body weight (lb)',data:weightDates.map(d=>parseFloat(state.days[d].bodyWeight)),borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.2)',tension:.2,fill:true}]},
-        options:{responsive:true,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
-      });
+      canvas.style.width='100%';
+      try{
+        if(typeof Chart!=='undefined'){
+          const ctx=canvas.getContext('2d');
+          weightChart=new Chart(ctx,{
+            type:'line',
+            data:{labels:weightDates,datasets:[{label:'Body weight (lb)',data:weightDates.map(d=>parseFloat(state.days[d].bodyWeight)||null),borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.25)',tension:.2,fill:true,pointRadius:5,pointBackgroundColor:'#fff'}]},
+            options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
+          });
+          setTimeout(()=>{if(weightChart)weightChart.resize();},150);
+        }
+      }catch(e){console.error(e);}
+      const summary = weightDates.map(d=>d.slice(5)+': '+(state.days[d].bodyWeight||'?')).join(' · ');
+      if(!document.getElementById('weightSummary')){
+        const p=document.createElement('p');
+        p.id='weightSummary';
+        p.className='note';
+        p.style.marginTop='8px';
+        canvas.parentNode.appendChild(p);
+      }
+      document.getElementById('weightSummary').textContent=summary;
     }else{
       wNote.style.display='block';
     }
