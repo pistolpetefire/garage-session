@@ -38,14 +38,14 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   <h1>Charts</h1>
   <div class="chart-wrap">
     <h2 style="font-size:18px;margin:0 0 8px">Body weight</h2>
-    <canvas id="weightChart" height="180"></canvas>
+    <canvas id="weightChart" height="180" style="min-height:180px;width:100%"></canvas>
     <p class="note" id="weightNote">Log daily body weight to see the chart.</p>
   </div>
   <div class="chart-wrap">
     <h2 style="font-size:18px;margin:0 0 8px">Lift progress</h2>
     <label for="exerciseSelect">Exercise</label>
     <select id="exerciseSelect"></select>
-    <canvas id="liftChart" height="180"></canvas>
+    <canvas id="liftChart" height="180" style="min-height:180px;width:100%"></canvas>
     <p class="note" id="liftNote">Log sets to see weight increases over time.</p>
   </div>
   <button class="link" id="closeProgress" type="button">Close</button>
@@ -221,23 +221,30 @@ function showProgress(){
   $('progressOverlay').classList.remove('hidden');
 }
 function updateLiftChart(){
-  const name=$('exerciseSelect').value;
-  const lNote=$('liftNote');
-  if(liftChart){liftChart.destroy();liftChart=null;}
-  if(!name){lNote.style.display='block';return;}
-  const byDate={};
-  state.sets.filter(s=>s.exercise===name).forEach(s=>{
-    if(!byDate[s.date]||s.weight>byDate[s.date])byDate[s.date]=s.weight;
-  });
-  const dates=Object.keys(byDate).sort();
-  if(!dates.length){lNote.style.display='block';return;}
-  lNote.style.display='none';
-  const ctx=$('liftChart').getContext('2d');
-  liftChart=new Chart(ctx,{
-    type:'line',
-    data:{labels:dates,datasets:[{label:name+' (lb)',data:dates.map(d=>byDate[d]),borderColor:'#2f7de1',backgroundColor:'rgba(47,125,225,.2)',tension:.2,fill:true}]},
-    options:{responsive:true,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
-  });
+  try{
+    const name=$('exerciseSelect').value;
+    const lNote=$('liftNote');
+    if(liftChart){liftChart.destroy();liftChart=null;}
+    if(!name || typeof Chart==='undefined'){lNote.style.display='block';return;}
+    const byDate={};
+    state.sets.filter(s=>s.exercise===name).forEach(s=>{
+      if(!byDate[s.date]||s.weight>byDate[s.date])byDate[s.date]=s.weight;
+    });
+    const dates=Object.keys(byDate).sort();
+    if(!dates.length){lNote.style.display='block';return;}
+    lNote.style.display='none';
+    const canvas=$('liftChart');
+    canvas.style.display='block';
+    const ctx=canvas.getContext('2d');
+    liftChart=new Chart(ctx,{
+      type:'line',
+      data:{labels:dates,datasets:[{label:name+' (lb)',data:dates.map(d=>byDate[d]),borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.25)',tension:.2,fill:true,pointRadius:4,pointBackgroundColor:'#fff'}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
+    });
+  }catch(err){
+    console.error('Lift chart error', err);
+    $('liftNote').style.display='block';
+  }
 }
 $('progressBtn').onclick=showProgress;
 $('closeProgress').onclick=()=>$('progressOverlay').classList.add('hidden');
