@@ -38,7 +38,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   <h1>Charts</h1>
   <div class="chart-wrap">
     <h2 style="font-size:18px;margin:0 0 8px">Body weight</h2>
-    <canvas id="weightChart" height="180" style="min-height:180px;width:100%"></canvas>
+    <div id="weightChart" style="width:100%;height:180px;background:#0b3a73;border-radius:8px"></div>
     <p class="note" id="weightNote">Log daily body weight to see the chart.</p>
   </div>
   <div class="chart-wrap">
@@ -209,6 +209,44 @@ function showProgress(){
     const wNote=$('weightNote');
     if(weightChart){weightChart.destroy();weightChart=null;}
     if(weightDates.length){
+      wNote.style.display='none';
+      const box=$('weightChart');
+      const vals=weightDates.map(d=>parseFloat(state.days[d].bodyWeight)).filter(v=>!isNaN(v));
+      if(vals.length>=1){
+        const min=Math.min(...vals)-1, max=Math.max(...vals)+1;
+        const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+        const w=Math.max(box.clientWidth||300, 280), h=180, pad=28;
+        const pts=vals.map((v,i)=>{
+          const x=pad+(i/(Math.max(vals.length-1,1)))*(w-pad*2);
+          const y=h-pad-((v-min)/(max-min||1))*(h-pad*2);
+          return x+','+y;
+        }).join(' ');
+        const avgY=h-pad-((avg-min)/(max-min||1))*(h-pad*2);
+        box.innerHTML='<svg width="100%" height="180" viewBox="0 0 '+w+' '+h+'">'+
+          '<line x1="'+pad+'" y1="'+avgY+'" x2="'+(w-pad)+'" y2="'+avgY+'" stroke="#8ec5ff" stroke-width="1" stroke-dasharray="4 3"/>'+
+          '<polyline fill="none" stroke="#9fd0ff" stroke-width="2.5" points="'+pts+'"/>'+
+          vals.map((v,i)=>{
+            const x=pad+(i/(Math.max(vals.length-1,1)))*(w-pad*2);
+            const y=h-pad-((v-min)/(max-min||1))*(h-pad*2);
+            return '<circle cx="'+x+'" cy="'+y+'" r="4.5" fill="#fff" stroke="#9fd0ff" stroke-width="1"/>';
+          }).join('')+
+          '<text x="'+pad+'" y="18" fill="#d6ebff" font-size="12">avg '+avg.toFixed(1)+' lb</text>'+
+          '</svg>';
+      }
+      const summary = weightDates.map(d=>d.slice(5)+': '+(state.days[d].bodyWeight||'?')).join(' · ');
+      if(!document.getElementById('weightSummary')){
+        const p=document.createElement('p');
+        p.id='weightSummary';
+        p.className='note';
+        p.style.marginTop='6px';
+        box.parentNode.appendChild(p);
+      }
+      document.getElementById('weightSummary').textContent=summary;
+    }else{
+      wNote.style.display='block';
+    }
+    // old chart code removed below
+    if(false){
       wNote.style.display='none';
       const canvas=$('weightChart');
       canvas.style.display='block';
