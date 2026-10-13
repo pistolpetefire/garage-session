@@ -96,7 +96,53 @@ function start(name){
   render();
   updateResumeHints();
 }
-function confirmReps(){const item=queue[index];const reps=parseInt($('reps').value,10);if(!reps)return;if(item.weight==null){$('target').textContent='Set the weight with +5 / −5 first.';return;}state.sets.push({date:today(),session:item.session,exercise:item.name,set:item.set,weight:item.weight,reps});state.weights[item.name]=item.weight;index++;saveActive();if(index>=queue.length){$('title').textContent='Saved on this device';state.active=null;save();return;}const next=queue[index];$('nextName').textContent=next.name+' · set '+next.set;$('restOverlay').classList.remove('hidden');remaining=queue[index-1].rest;tick();timerId=setInterval(tick,1000);}
+
+function celebrate(exerciseName, then){
+  const msgs = ['Nice work!','Crushed it!','All sets done','Strong set!','Well done!'];
+  const emojis = ['🎉','💪','🔥','🏆','✨'];
+  $('celebrateText').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  $('celebrateImg').textContent = emojis[Math.floor(Math.random()*emojis.length)];
+  $('celebrateOverlay').classList.remove('hidden');
+  // Short celebratory tone via Web Audio
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(523, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(784, ctx.currentTime + 0.15);
+    o.frequency.exponentialRampToValueAtTime(1046, ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.15, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + 0.5);
+  }catch(e){}
+  setTimeout(()=>{
+    $('celebrateOverlay').classList.add('hidden');
+    if(then) then();
+  }, 2200);
+}
+
+function confirmReps(){const item=queue[index];const reps=parseInt($('reps').value,10);if(!reps)return;if(item.weight==null){$('target').textContent='Set the weight with +5 / −5 first.';return;}state.sets.push({date:today(),session:item.session,exercise:item.name,set:item.set,weight:item.weight,reps});state.weights[item.name]=item.weight;const isLastSetOfExercise = (index+1 >= queue.length) || (queue[index+1].name !== item.name);
+index++;
+saveActive();
+const proceed = ()=>{
+  if(index>=queue.length){$('title').textContent='Saved on this device';state.active=null;save();return;}
+  const next=queue[index];$('nextName').textContent=next.name+' · set '+next.set;$('restOverlay').classList.remove('hidden');remaining=queue[index-1].rest;tick();timerId=setInterval(tick,1000);
+};
+if(isLastSetOfExercise){
+  // Only celebrate if every set of this exercise hit at least 8 reps
+  const setsForThis = state.sets.filter(s => s.exercise === item.name && s.session === item.session && s.date === today());
+  const allHit = setsForThis.length > 0 && setsForThis.every(s => s.reps >= 8);
+  if(allHit){
+    celebrate(item.name, proceed);
+  }else{
+    proceed();
+  }
+}else{
+  proceed();
+}
+}
 function tick(){const m=Math.floor(remaining/60),s=remaining%60;$('timer').textContent=m+':'+String(s).padStart(2,'0');if(remaining<=0){clearInterval(timerId);timerId=null;$('timer').textContent='Lift';alarm(queue[index]&&queue[index].name);return;}remaining--;}
 function showLog(){const days=Object.keys(state.days).sort().reverse();$('dailyList').innerHTML=days.length?days.map(date=>{const d=state.days[date];return '<div class="entry"><b>'+date+' · daily</b><div>Weight '+(d.bodyWeight||'—')+' lb · Steps '+(d.steps||'—')+'</div></div>';}).join(''):'';const rows=state.sets;$('logList').innerHTML=rows.length?rows.map((s,i)=>'<div class="entry"><b>'+s.date+' · '+s.session+' · '+s.exercise+' · set '+s.set+'</b><div class="editrow"><input id="w'+i+'" inputmode="numeric" value="'+s.weight+'"><input id="r'+i+'" inputmode="numeric" value="'+s.reps+'"><button class="save" type="button" data-i="'+i+'">Save</button><button class="del" type="button" data-i="'+i+'">Delete</button></div></div>').join(''):'<p class="note">No sets yet.</p>';$('logOverlay').classList.remove('hidden');}
 function showEdit(){let html='';Object.keys(PROGRAM).forEach(day=>{html+='<div class="dayblock"><div class="editrow" style="margin-bottom:8px"><input class="namebox" data-day="'+day+'" data-field="workoutname" value="'+day.replace(/"/g,'')+'" placeholder="Workout name"><button type="button" class="save" data-action="rename" data-day="'+day+'">Rename</button></div><h2>'+day+'</h2>';PROGRAM[day].exercises.forEach((ex,i)=>{html+='<div class="editrow"><div class="updown"><button type="button" data-action="up" data-day="'+day+'" data-i="'+i+'">↑</button><button type="button" data-action="down" data-day="'+day+'" data-i="'+i+'">↓</button></div><input class="namebox" data-day="'+day+'" data-i="'+i+'" data-field="name" value="'+ex[0].replace(/"/g,'')+'"><input data-day="'+day+'" data-i="'+i+'" data-field="sets" inputmode="numeric" value="'+ex[1]+'"><button type="button" class="del" data-action="del" data-day="'+day+'" data-i="'+i+'">Del</button></div>';});html+='<button class="link add" type="button" data-day="'+day+'">Add exercise</button></div>';});$('editList').innerHTML=html;$('editOverlay').classList.remove('hidden');}
@@ -221,4 +267,13 @@ function updateResumeHints(){
 
 updateResumeHints();
 fillDaily();
-</script></body></html>
+</script>
+<div class="overlay hidden" id="celebrateOverlay" style="background:rgba(6,24,58,.92);align-items:center;justify-content:center;z-index:20">
+  <div style="text-align:center;padding:20px">
+    <div id="celebrateImg" style="font-size:120px;line-height:1;margin-bottom:12px">🎉</div>
+    <div id="celebrateText" style="font-size:28px;font-weight:800;color:#9fd0ff">Nice work!</div>
+    <div style="font-size:16px;color:#d6ebff;margin-top:8px">All sets done</div>
+  </div>
+</div>
+
+</body></html>
