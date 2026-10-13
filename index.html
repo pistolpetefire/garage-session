@@ -243,7 +243,9 @@ function importCSV(file){
         const weight = parseFloat(cols[5]) || 0;
         const reps = parseInt(cols[6],10) || 0;
         if(date && exercise){
-          state.sets.push({date, session, exercise, set, weight, reps});
+          if(!state.sets.some(s=>s.date===date && s.session===session && s.exercise===exercise && s.set===set && s.weight===weight && s.reps===reps)){
+            state.sets.push({date, session, exercise, set, weight, reps});
+          }
           if(weight) state.weights[exercise] = weight;
           importedSets++;
         }
