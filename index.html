@@ -31,7 +31,9 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
 </div>
 <div class="wrap hidden" id="session"><div class="kicker" id="kicker">Session</div><h1 id="title">Workout</h1><section class="card"><div class="set" id="setLabel">Set</div><div class="exercise" id="exercise">—</div><div class="target" id="target">8–12 controlled reps. Full range, no rush.</div><div class="row"><button class="step" id="minus" type="button">−5</button><div class="weight" id="weight">—</div><button class="step" id="plus" type="button">+5</button></div><input class="reps" id="reps" inputmode="numeric" placeholder="Reps"><div class="pad" id="pad"></div><button class="confirm" id="confirm" type="button">Confirm reps</button><button class="link" id="changeBtn" type="button">Change workout</button></section></div>
 <div class="overlay hidden" id="restOverlay"><div class="sheet"><div class="kicker">Next lift begins in</div><div class="timer" id="timer">2:00</div><h1 id="nextName">Next</h1><p class="note">If you switch apps, start the Clock timer for this same rest. Tap the Lift notification to return.</p><button class="go" id="liftNow" type="button">Start lift now</button></div></div>
-<div class="overlay hidden" id="logOverlay"><div class="sheet"><div class="kicker">Saved on this device</div><h1>Log</h1><div id="dailyList"></div><div id="logList"></div><button class="go" id="downloadBtn" type="button">Save garage-log.csv</button><button class="link" id="closeLog" type="button">Close</button></div></div>
+<div class="overlay hidden" id="logOverlay"><div class="sheet"><div class="kicker">Saved on this device</div><h1>Log</h1><div id="dailyList"></div><div id="logList"></div><button class="go" id="downloadBtn" type="button">Save garage-log.csv</button>
+<button class="link" id="importBtn" type="button">Import garage-log.csv</button>
+<input type="file" id="importFile" accept=".csv" style="display:none"><button class="link" id="closeLog" type="button">Close</button></div></div>
 
 <div class="overlay hidden" id="progressOverlay"><div class="sheet">
   <div class="kicker">Progress</div>
@@ -197,6 +199,53 @@ $('logBtn').onclick=showLog;
 $('editBtn').onclick=showEdit;
 $('closeLog').onclick=()=>$('logOverlay').classList.add('hidden');
 $('closeEdit').onclick=()=>$('editOverlay').classList.add('hidden');
+
+function importCSV(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if(lines.length < 2){ alert('Empty or invalid CSV'); return; }
+    const header = lines[0].toLowerCase();
+    let importedSets = 0, importedDays = 0;
+    for(let i=1; i<lines.length; i++){
+      const cols = lines[i].split(',');
+      if(cols.length < 6) continue;
+      const date = cols[0].trim();
+      const type = cols[1].trim().toLowerCase();
+      if(type === 'daily'){
+        const bw = cols[5] || '';
+        const steps = cols[7] || cols[6] || '';
+        if(date && (bw || steps)){
+          state.days[date] = {bodyWeight: bw, steps: steps};
+          importedDays++;
+        }
+      } else if(type === 'set'){
+        const session = cols[2].trim();
+        const exercise = cols[3].replace(/"/g,'').trim();
+        const set = parseInt(cols[4],10) || 1;
+        const weight = parseFloat(cols[5]) || 0;
+        const reps = parseInt(cols[6],10) || 0;
+        if(date && exercise){
+          state.sets.push({date, session, exercise, set, weight, reps});
+          if(weight) state.weights[exercise] = weight;
+          importedSets++;
+        }
+      }
+    }
+    save();
+    showLog();
+    alert('Imported '+importedDays+' weigh-ins and '+importedSets+' sets.');
+  };
+  reader.readAsText(file);
+}
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = e => {
+  const f = e.target.files[0];
+  if(f) importCSV(f);
+  e.target.value = '';
+};
+
 $('downloadBtn').onclick=download;
 
 
