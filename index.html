@@ -177,23 +177,33 @@ function showBackupStatus(){
 }
 $('backupBtn').onclick = doBackup;
 
-function download(){ try{
-  const lines=['Date,Type,Session,Exercise,Set,Weight,Reps,Steps'];
-  Object.keys(state.days).sort().forEach(date=>{
-    const d=state.days[date];
-    lines.push([date,'daily','','','',d.bodyWeight||'','',d.steps||''].join(','));
-  });
-  state.sets.forEach(s=>lines.push([s.date,'set',s.session,'"'+s.exercise+'"',s.set,s.weight,s.reps,''].join(',')));
-  const stamp=new Date().toISOString().slice(0,10);
-  const name='garage-log-'+stamp+'.csv';
-  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=name;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  alert('Saved '+name+'\n'+Object.keys(state.days).length+' weigh-ins, '+state.sets.length+' sets.\nCheck your Downloads or Files app.');
-}catch(e){alert('Save failed: '+e.message);} }
+async function download(){
+  try{
+    const lines=['Date,Type,Session,Exercise,Set,Weight,Reps,Steps'];
+    Object.keys(state.days).sort().forEach(date=>{
+      const d=state.days[date];
+      lines.push([date,'daily','','','',d.bodyWeight||'','',d.steps||''].join(','));
+    });
+    state.sets.forEach(s=>lines.push([s.date,'set',s.session,'"'+s.exercise+'"',s.set,s.weight,s.reps,''].join(',')));
+    const stamp=new Date().toISOString().slice(0,10);
+    const name='garage-log-'+stamp+'.csv';
+    const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+    const file=new File([blob], name, {type:'text/csv'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:name});
+      $('backupStatus').textContent='Shared '+name;
+    }else{
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=name;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+      alert('Saved '+name);
+    }
+  }catch(e){
+    if(e.name!=='AbortError') alert('Save failed: '+(e.message||e));
+  }
+}
 $('saveDaily').onclick=()=>{const bodyWeight=$('bodyWeight').value.trim(),steps=$('steps').value.trim();if(!bodyWeight&&!steps){$('dailyNote').textContent='Nothing entered.';return;}state.days[today()]={bodyWeight,steps};save();$('dailyNote').textContent='Saved for '+today();};
 $('logList').onclick=e=>{const b=e.target.closest('button');if(!b)return;const i=Number(b.dataset.i);if(b.classList.contains('del')){state.sets.splice(i,1);save();showLog();return;}const weight=parseFloat($('w'+i).value),reps=parseInt($('r'+i).value,10);if(!weight||!reps)return;state.sets[i].weight=weight;state.sets[i].reps=reps;state.weights[state.sets[i].exercise]=weight;save();b.textContent='Saved';};
 $('editList').onclick=e=>{
