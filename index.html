@@ -133,7 +133,7 @@ const proceed = ()=>{
 if(isLastSetOfExercise){
   // Only celebrate if every set of this exercise hit at least 8 reps
   const setsForThis = state.sets.filter(s => s.exercise === item.name && s.session === item.session && s.date === today());
-  const allHit = setsForThis.length > 0 && setsForThis.every(s => s.reps >= 8);
+  const allHit = setsForThis.length > 0 && setsForThis.every(s => s.reps >= 12);
   if(allHit){
     celebrate(item.name, proceed);
   }else{
