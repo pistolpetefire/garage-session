@@ -203,27 +203,29 @@ $('downloadBtn').onclick=download;
 
 let weightChart=null, liftChart=null;
 function showProgress(){
-  const dates=Object.keys(state.days).sort();
-  const weightDates=dates.filter(d=>state.days[d].bodyWeight);
-  const wNote=$('weightNote');
-  if(weightChart){weightChart.destroy();weightChart=null;}
-  if(weightDates.length){
-    wNote.style.display='none';
-    const ctx=$('weightChart').getContext('2d');
-    weightChart=new Chart(ctx,{
-      type:'line',
-      data:{labels:weightDates,datasets:[{label:'Body weight (lb)',data:weightDates.map(d=>parseFloat(state.days[d].bodyWeight)),borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.2)',tension:.2,fill:true}]},
-      options:{responsive:true,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
-    });
-  }else{
-    wNote.style.display='block';
-    const ctx=$('weightChart').getContext('2d');
-    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  try{
+    const dates=Object.keys(state.days).sort();
+    const weightDates=dates.filter(d=>state.days[d].bodyWeight);
+    const wNote=$('weightNote');
+    if(weightChart){weightChart.destroy();weightChart=null;}
+    if(weightDates.length && typeof Chart!=='undefined'){
+      wNote.style.display='none';
+      const ctx=$('weightChart').getContext('2d');
+      weightChart=new Chart(ctx,{
+        type:'line',
+        data:{labels:weightDates,datasets:[{label:'Body weight (lb)',data:weightDates.map(d=>parseFloat(state.days[d].bodyWeight)),borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.2)',tension:.2,fill:true}]},
+        options:{responsive:true,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
+      });
+    }else{
+      wNote.style.display='block';
+    }
+    const exercises=[...new Set(state.sets.map(s=>s.exercise))].sort();
+    const sel=$('exerciseSelect');
+    sel.innerHTML=exercises.length?exercises.map(e=>'<option value="'+e.replace(/"/g,'')+'">'+e+'</option>').join(''):'<option value="">No exercises logged</option>';
+    updateLiftChart();
+  }catch(err){
+    console.error('Progress chart error', err);
   }
-  const exercises=[...new Set(state.sets.map(s=>s.exercise))].sort();
-  const sel=$('exerciseSelect');
-  sel.innerHTML=exercises.length?exercises.map(e=>'<option value="'+e.replace(/"/g,'')+'">'+e+'</option>').join(''):'<option value="">No exercises logged</option>';
-  updateLiftChart();
   $('progressOverlay').classList.remove('hidden');
 }
 function updateLiftChart(){
