@@ -145,7 +145,9 @@ $('resetProgram').onclick=()=>{PROGRAM=JSON.parse(JSON.stringify(DEFAULT_PROGRAM
 $('pad').innerHTML=[1,2,3,4,5,6,7,8,9,'C',0,'⌫'].map(k=>'<button type="button" data-k="'+k+'">'+k+'</button>').join('');
 $('pad').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;if(k==='C')$('reps').value='';else if(k==='⌫')$('reps').value=$('reps').value.slice(0,-1);else if($('reps').value.length<2)$('reps').value+=k;};
 document.getElementById('chooser').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.name)start(b.dataset.name);};
-$('changeBtn').onclick=()=>{stopAlarm();$('session').classList.add('hidden');$('chooser').classList.remove('hidden');$('restOverlay').classList.add('hidden');if(timerId)clearInterval(timerId);
+$('changeBtn').onclick=()=>{stopAlarm();saveActive();$('session').classList.add('hidden');$('chooser').classList.remove('hidden');$('restOverlay').classList.add('hidden');if(timerId)clearInterval(timerId);fillDaily();updateResumeHints();};
+
+
 let weightChart=null, liftChart=null;
 function showProgress(){
   const dates=Object.keys(state.days).sort();
@@ -162,6 +164,8 @@ function showProgress(){
     });
   }else{
     wNote.style.display='block';
+    const ctx=$('weightChart').getContext('2d');
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
   }
   const exercises=[...new Set(state.sets.map(s=>s.exercise))].sort();
   const sel=$('exerciseSelect');
@@ -191,78 +195,6 @@ function updateLiftChart(){
 $('progressBtn').onclick=showProgress;
 $('closeProgress').onclick=()=>$('progressOverlay').classList.add('hidden');
 $('exerciseSelect').onchange=updateLiftChart;
-
-
-function updateResumeHints(){
-  document.querySelectorAll('.pick').forEach(btn=>{
-    const name=btn.dataset.name;
-    const small=btn.querySelector('small');
-    if(!small)return;
-    const base=small.dataset.base||small.textContent;
-    if(!small.dataset.base) small.dataset.base=base;
-    if(state.active && state.active.name===name && state.active.index < (state.active.queue||[]).length){
-      const left=(state.active.queue||[]).length - state.active.index;
-      small.textContent=base+' · resume ('+left+' left)';
-    }else{
-      small.textContent=base;
-    }
-  });
-}
-
-updateResumeHints();
-fillDaily();};
-$('logBtn').onclick=showLog;$('editBtn').onclick=showEdit;$('closeLog').onclick=()=>$('logOverlay').classList.add('hidden');$('closeEdit').onclick=()=>$('editOverlay').classList.add('hidden');$('downloadBtn').onclick=download;
-$('minus').onclick=()=>{const item=queue[index];if(!item)return;item.weight=Math.max(0,(item.weight||0)-5);render();saveActive();};
-$('plus').onclick=()=>{const item=queue[index];if(!item)return;item.weight=(item.weight||0)+5;render();saveActive();};
-$('confirm').onclick=confirmReps;
-$('liftNow').onclick=()=>{stopAlarm();if(timerId)clearInterval(timerId);$('restOverlay').classList.add('hidden');render();};
-
-let weightChart=null, liftChart=null;
-function showProgress(){
-  const dates=Object.keys(state.days).sort();
-  const weightDates=dates.filter(d=>state.days[d].bodyWeight);
-  const wNote=$('weightNote');
-  if(weightChart){weightChart.destroy();weightChart=null;}
-  if(weightDates.length){
-    wNote.style.display='none';
-    const ctx=$('weightChart').getContext('2d');
-    weightChart=new Chart(ctx,{
-      type:'line',
-      data:{labels:weightDates,datasets:[{label:'Body weight (lb)',data:weightDates.map(d=>parseFloat(state.days[d].bodyWeight)),borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.2)',tension:.2,fill:true}]},
-      options:{responsive:true,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
-    });
-  }else{
-    wNote.style.display='block';
-  }
-  const exercises=[...new Set(state.sets.map(s=>s.exercise))].sort();
-  const sel=$('exerciseSelect');
-  sel.innerHTML=exercises.length?exercises.map(e=>'<option value="'+e.replace(/"/g,'')+'">'+e+'</option>').join(''):'<option value="">No exercises logged</option>';
-  updateLiftChart();
-  $('progressOverlay').classList.remove('hidden');
-}
-function updateLiftChart(){
-  const name=$('exerciseSelect').value;
-  const lNote=$('liftNote');
-  if(liftChart){liftChart.destroy();liftChart=null;}
-  if(!name){lNote.style.display='block';return;}
-  const byDate={};
-  state.sets.filter(s=>s.exercise===name).forEach(s=>{
-    if(!byDate[s.date]||s.weight>byDate[s.date])byDate[s.date]=s.weight;
-  });
-  const dates=Object.keys(byDate).sort();
-  if(!dates.length){lNote.style.display='block';return;}
-  lNote.style.display='none';
-  const ctx=$('liftChart').getContext('2d');
-  liftChart=new Chart(ctx,{
-    type:'line',
-    data:{labels:dates,datasets:[{label:name+' (lb)',data:dates.map(d=>byDate[d]),borderColor:'#2f7de1',backgroundColor:'rgba(47,125,225,.2)',tension:.2,fill:true}]},
-    options:{responsive:true,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
-  });
-}
-$('progressBtn').onclick=showProgress;
-$('closeProgress').onclick=()=>$('progressOverlay').classList.add('hidden');
-$('exerciseSelect').onchange=updateLiftChart;
-
 
 function updateResumeHints(){
   document.querySelectorAll('.pick').forEach(btn=>{
