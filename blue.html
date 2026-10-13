@@ -129,7 +129,7 @@ function confirmReps(){const item=queue[index];const reps=parseInt($('reps').val
   };
   if(isLastSetOfExercise){
     const setsForThis = state.sets.filter(s => s.exercise === item.name && s.session === item.session && s.date === today());
-    const allHit = setsForThis.length > 0 && setsForThis.every(s => s.reps >= 8);
+    const allHit = setsForThis.length > 0 && setsForThis.every(s => s.reps >= 12);
     if(allHit){ celebrate(item.name, proceed); } else { proceed(); }
   }else{
     proceed();
