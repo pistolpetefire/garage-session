@@ -147,6 +147,13 @@ $('pad').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.d
 document.getElementById('chooser').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.name)start(b.dataset.name);};
 $('changeBtn').onclick=()=>{stopAlarm();saveActive();$('session').classList.add('hidden');$('chooser').classList.remove('hidden');$('restOverlay').classList.add('hidden');if(timerId)clearInterval(timerId);fillDaily();updateResumeHints();};
 
+$('logBtn').onclick=showLog;
+$('editBtn').onclick=showEdit;
+$('closeLog').onclick=()=>$('logOverlay').classList.add('hidden');
+$('closeEdit').onclick=()=>$('editOverlay').classList.add('hidden');
+$('downloadBtn').onclick=download;
+
+
 
 let weightChart=null, liftChart=null;
 function showProgress(){
