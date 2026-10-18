@@ -66,6 +66,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   </div>
   <h2 style="margin-top:20px">Change log</h2>
   <div style="line-height:1.45;font-size:15px">
+    <p><b>v1.5</b> — End workout button fixed (removed unreliable confirm dialog). Works on PC, iPhone, and iPad.</p>
     <p><b>v1.4</b> — Exercise progress chart scales tightly to actual weights (5 lb steps). No more long empty scroll.</p>
     <p><b>v1.3</b> — Removed automatic CSV download/popup after each set so celebration is not blocked. Manual backup still available.</p>
     <p><b>v1.2</b> — Live exercise name edit, Switch exercise button for reordering, End workout button, final exercise complete announcement.</p>
@@ -258,11 +259,9 @@ $('editList').onclick=e=>{
     showEdit();return;
   }
   if(action==='delworkout'&&Object.keys(PROGRAM).length>1){
-    if(confirm('Delete workout "'+day+'"?')){
-      delete PROGRAM[day];
-      if(state.active&&state.active.name===day) state.active=null;
-      showEdit();
-    }
+    delete PROGRAM[day];
+    if(state.active&&state.active.name===day) state.active=null;
+    showEdit();
     return;
   }
   if(action==='rename'){
