@@ -513,10 +513,15 @@ function updateLiftChart(){
     canvas.style.display='block';
     canvas.style.height='180px';
     const ctx=canvas.getContext('2d');
+    const weights = dates.map(d=>byDate[d]);
+    const minW = Math.min(...weights);
+    const maxW = Math.max(...weights);
+    const yMin = Math.max(0, Math.floor((minW - 10) / 5) * 5);
+    const yMax = Math.ceil((maxW + 10) / 5) * 5;
     liftChart=new Chart(ctx,{
       type:'line',
-      data:{labels:dates,datasets:[{label:name+' (lb)',data:dates.map(d=>byDate[d]),borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.25)',tension:.2,fill:true,pointRadius:4,pointBackgroundColor:'#fff'}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{ticks:{color:'#d6ebff'},title:{display:true,text:'lb',color:'#d6ebff'}}}}
+      data:{labels:dates,datasets:[{label:name+' (lb)',data:weights,borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.25)',tension:.2,fill:true,pointRadius:4,pointBackgroundColor:'#fff'}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{min:yMin,max:yMax,ticks:{color:'#d6ebff',stepSize:5},title:{display:true,text:'lb',color:'#d6ebff'}}}}
     });
     setTimeout(()=>{if(liftChart)liftChart.resize();},100);
   }catch(err){
