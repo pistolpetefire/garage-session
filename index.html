@@ -313,17 +313,15 @@ $('minus').onclick=()=>{
 };
 
 $('endBtn').onclick=()=>{
-  if(confirm('End this workout and return home? Unfinished sets will not be saved.')){
-    stopAlarm();
-    state.active=null;
-    save();
-    if(timerId)clearInterval(timerId);
-    $('session').classList.add('hidden');
-    $('restOverlay').classList.add('hidden');
-    $('chooser').classList.remove('hidden');
-    fillDaily();
-    updateResumeHints();
-  }
+  stopAlarm();
+  state.active=null;
+  save();
+  if(timerId)clearInterval(timerId);
+  $('session').classList.add('hidden');
+  $('restOverlay').classList.add('hidden');
+  $('chooser').classList.remove('hidden');
+  fillDaily();
+  updateResumeHints();
 };
 $('logDuring').onclick=showLog;
 
