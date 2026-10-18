@@ -172,8 +172,6 @@ function doBackup(){
     weights: state.weights
   };
   localStorage.setItem('garage-backup', JSON.stringify(backup));
-  // also trigger a dated CSV download
-  download();
   const status = $('backupStatus');
   if(status) status.textContent = 'Backup saved ' + stamp + ' · ' + Object.keys(state.days).length + ' weigh-ins, ' + state.sets.length + ' sets';
 }
@@ -186,7 +184,7 @@ function showBackupStatus(){
     if(status && b.savedAt) status.textContent = 'Last backup: ' + b.savedAt;
   }catch(e){}
 }
-$('backupBtn').onclick = doBackup;
+$('backupBtn').onclick = () => { doBackup(); download(); };
 
 async function download(){
   try{
