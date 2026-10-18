@@ -8,7 +8,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
 </style><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="update-banner">Updated · v1.5 · End workout & Progress fixed</div>
+<div class="update-banner">Updated · v1.6 · Chart height fixed</div>
 <div class="wrap" id="chooser">
   <div class="kicker">Garage session</div>
   <h1>Which workout?</h1>
@@ -48,7 +48,9 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
     <h2 style="font-size:18px;margin:0 0 8px">Lift progress</h2>
     <label for="exerciseSelect">Exercise</label>
     <select id="exerciseSelect"></select>
-    <canvas id="liftChart" height="180" style="min-height:180px;width:100%"></canvas>
+    <div style="height:220px;max-height:220px;overflow:hidden;position:relative">
+      <canvas id="liftChart" style="width:100%;height:220px;max-height:220px;display:block"></canvas>
+    </div>
     <p class="note" id="liftNote">Log sets to see weight increases over time.</p>
   </div>
   <button class="link" id="closeProgress" type="button">Close</button>
@@ -67,6 +69,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   </div>
   <h2 style="margin-top:20px">Change log</h2>
   <div style="line-height:1.45;font-size:15px">
+    <p><b>v1.6</b> — Lift progress chart locked to 220px height so it fits the page. No endless scroll.</p>
     <p><b>v1.5</b> — End workout button fixed. Progress button binding restored. Removed unreliable confirm dialogs. Works on PC, iPhone, and iPad.</p>
     <p><b>v1.4</b> — Exercise progress chart scales tightly to actual weights (5 lb steps). No more long empty scroll.</p>
     <p><b>v1.3</b> — Removed automatic CSV download/popup after each set so celebration is not blocked. Manual backup still available.</p>
@@ -532,17 +535,29 @@ function updateLiftChart(){
     lNote.style.display='none';
     const canvas=$('liftChart');
     canvas.style.display='block';
-    canvas.style.height='180px';
+    canvas.style.width='100%';
+    canvas.style.height='220px';
+    canvas.style.maxHeight='220px';
     const ctx=canvas.getContext('2d');
     const weights = dates.map(d=>byDate[d]);
     const minW = Math.min(...weights);
     const maxW = Math.max(...weights);
-    const yMin = Math.max(0, Math.floor((minW - 10) / 5) * 5);
-    const yMax = Math.ceil((maxW + 10) / 5) * 5;
+    const range = Math.max(maxW - minW, 10);
+    const step = range > 80 ? 10 : 5;
+    const yMin = Math.max(0, Math.floor((minW - step) / step) * step);
+    const yMax = Math.ceil((maxW + step) / step) * step;
     liftChart=new Chart(ctx,{
       type:'line',
       data:{labels:dates,datasets:[{label:name+' (lb)',data:weights,borderColor:'#9fd0ff',backgroundColor:'rgba(159,208,255,.25)',tension:.2,fill:true,pointRadius:4,pointBackgroundColor:'#fff'}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f4f8fd'}}},scales:{x:{ticks:{color:'#d6ebff'}},y:{min:yMin,max:yMax,ticks:{color:'#d6ebff',stepSize:5},title:{display:true,text:'lb',color:'#d6ebff'}}}}
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#f4f8fd'}}},
+        scales:{
+          x:{ticks:{color:'#d6ebff',maxRotation:45,autoSkip:true}},
+          y:{min:yMin,max:yMax,ticks:{color:'#d6ebff',stepSize:step,maxTicksLimit:8},title:{display:true,text:'lb',color:'#d6ebff'}}
+        }
+      }
     });
     setTimeout(()=>{if(liftChart)liftChart.resize();},100);
   }catch(err){
