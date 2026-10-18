@@ -25,6 +25,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   <button class="link" id="logBtn" type="button">Log</button>
   <button class="link" id="editBtn" type="button">Edit workouts</button>
   <button class="link" id="progressBtn" type="button">Progress</button>
+  <button class="link" id="manualBtn" type="button">User manual</button>
 <button class="link" id="backupBtn" type="button" style="border-color:#ff8c00;color:#ff8c00">Backup log now</button>
 <p class="note" id="backupStatus" style="margin-top:6px"></p>
 </div>
@@ -50,6 +51,28 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
     <p class="note" id="liftNote">Log sets to see weight increases over time.</p>
   </div>
   <button class="link" id="closeProgress" type="button">Close</button>
+</div></div>
+
+<div class="overlay hidden" id="manualOverlay"><div class="sheet">
+  <div class="kicker">Garage Session</div>
+  <h1>User manual</h1>
+  <div style="line-height:1.45;font-size:16px">
+    <p><b>Start a workout</b><br>Tap a workout name on the home screen. Sets appear one at a time. Adjust weight with +5 / −5, enter reps, confirm.</p>
+    <p><b>Live edits during a set</b><br>The exercise name is editable. Change it before confirming if you switch lifts. Use <b>Switch exercise</b> to reorder remaining exercises. Use <b>Edit log</b> to fix earlier sets. <b>End workout</b> returns home and clears the active session.</p>
+    <p><b>Progression</b><br>When every set of an exercise reaches 12 reps, the next suggested weight increases by 5 lb.</p>
+    <p><b>Daily log</b><br>Optional body weight and steps on the home screen. Charts and history live under Progress and Log.</p>
+    <p><b>Edit workouts</b><br>Rename workouts, reorder/add/delete exercises, add or delete whole workouts. Changes apply to new sessions.</p>
+    <p><b>Backup</b><br>Data stays on this device. Use Backup log now or Save log as CSV to export. Import restores from a previous CSV.</p>
+  </div>
+  <h2 style="margin-top:20px">Change log</h2>
+  <div style="line-height:1.45;font-size:15px">
+    <p><b>v1.4</b> — Exercise progress chart scales tightly to actual weights (5 lb steps). No more long empty scroll.</p>
+    <p><b>v1.3</b> — Removed automatic CSV download/popup after each set so celebration is not blocked. Manual backup still available.</p>
+    <p><b>v1.2</b> — Live exercise name edit, Switch exercise button for reordering, End workout button, final exercise complete announcement.</p>
+    <p><b>v1.1</b> — Switched default program to 3 full-body workouts. All workouts fully editable (add/delete/rename days and exercises). Dynamic home buttons.</p>
+    <p><b>v1.0</b> — Original 4-day split, set logging, rest timer, progress charts, CSV backup/import.</p>
+  </div>
+  <button class="link" id="closeManual" type="button" style="margin-top:16px">Close</button>
 </div></div>
 
 <div class="overlay hidden" id="editOverlay"><div class="sheet"><div class="kicker">Workouts</div><h1>Edit workouts</h1><p class="note">Rename, reorder, add or remove exercises. Add or delete whole workouts. Changes apply to new sessions. Old log is not rewritten.</p><div id="editList"></div><button class="go" id="saveProgram" type="button">Save workouts</button><button class="link" id="resetProgram" type="button">Reset to 3 full-body</button><button class="link" id="closeEdit" type="button">Close</button></div></div>
@@ -529,7 +552,8 @@ function updateLiftChart(){
     $('liftNote').style.display='block';
   }
 }
-$('progressBtn').onclick=showProgress;
+$('manualBtn').onclick=()=>$('manualOverlay').classList.remove('hidden');
+$('closeManual').onclick=()=>$('manualOverlay').classList.add('hidden');
 $('closeProgress').onclick=()=>$('progressOverlay').classList.add('hidden');
 $('exerciseSelect').onchange=updateLiftChart;
 
