@@ -8,7 +8,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
 </style><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="update-banner">UPDATED · v1.7 · Program Export / Import</div>
+<div class="update-banner">UPDATED · v1.8 · Error log + full test</div>
 <div class="wrap" id="chooser">
   <div class="kicker">Garage session</div>
   <h1 style="border-left:6px solid #ff8c00;padding-left:10px">Which workout?</h1>
@@ -30,6 +30,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   <input type="file" id="importProgramFile" accept=".json" style="display:none">
   <button class="link" id="progressBtn" type="button">Progress</button>
   <button class="link" id="manualBtn" type="button">User manual</button>
+  <button class="link" id="errorLogBtn" type="button" style="border-color:#ff8c00;color:#ff8c00">Error log</button>
 <button class="link" id="backupBtn" type="button" style="border-color:#ff8c00;color:#ff8c00">Backup log now</button>
 <p class="note" id="backupStatus" style="margin-top:6px"></p>
 </div>
@@ -84,6 +85,14 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   <button class="link" id="closeManual" type="button" style="margin-top:16px">Close</button>
 </div></div>
 
+
+<div class="overlay hidden" id="errorLogOverlay"><div class="sheet">
+  <div class="kicker">Diagnostics</div>
+  <h1>Error log</h1>
+  <div id="errorLogList" style="font-size:14px;line-height:1.4;max-height:50vh;overflow:auto"></div>
+  <button class="link" id="clearErrorLog" type="button">Clear log</button>
+  <button class="link" id="closeErrorLog" type="button">Close</button>
+</div></div>
 <div class="overlay hidden" id="editOverlay"><div class="sheet"><div class="kicker">Workouts</div><h1>Edit workouts</h1><p class="note">Rename, reorder, add or remove exercises. Add or delete whole workouts. Changes apply to new sessions. Old log is not rewritten.</p><div id="editList"></div><button class="go" id="saveProgram" type="button">Save workouts</button><button class="link" id="resetProgram" type="button">Reset to 3 full-body</button><button class="link" id="closeEdit" type="button">Close</button></div></div>
 <script>
 const DEFAULT_PROGRAM={
@@ -95,6 +104,31 @@ const $=id=>document.getElementById(id);
 let state=JSON.parse(localStorage.getItem('garage-session-v1')||'null')||{started:new Date().toISOString().slice(0,10),sets:[],weights:{},program:null,days:{}};
 if(!state.days)state.days={};
 let PROGRAM=state.program||JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
+
+// Error log
+function logError(msg, src){
+  try{
+    const entry = {t: new Date().toISOString(), msg: String(msg), src: src||''};
+    const logs = JSON.parse(localStorage.getItem('garage-errors')||'[]');
+    logs.push(entry);
+    if(logs.length > 50) logs.shift();
+    localStorage.setItem('garage-errors', JSON.stringify(logs));
+  }catch(e){}
+}
+window.addEventListener('error', e => logError(e.message, e.filename + ':' + e.lineno));
+window.addEventListener('unhandledrejection', e => logError(e.reason, 'promise'));
+
+function showErrorLog(){
+  const logs = JSON.parse(localStorage.getItem('garage-errors')||'[]');
+  const el = $('errorLogList');
+  if(!logs.length){
+    el.innerHTML = '<p class="note">No errors recorded.</p>';
+  }else{
+    el.innerHTML = logs.slice().reverse().map(e => '<div class="entry"><b>'+e.t.slice(0,19).replace('T',' ')+'</b><div>'+e.msg+'</div><div style="color:#9fd0ff;font-size:12px">'+e.src+'</div></div>').join('');
+  }
+  $('errorLogOverlay').classList.remove('hidden');
+}
+
 let queue=[],index=0,timerId=null,remaining=0,sessionName='',alarmTimer=null;
 function today(){return new Date().toISOString().slice(0,10);}
 function save(){state.program=PROGRAM;localStorage.setItem('garage-session-v1',JSON.stringify(state));}
@@ -563,6 +597,10 @@ function updateLiftChart(){
     $('liftNote').style.display='block';
   }
 }
+
+$('errorLogBtn').onclick=showErrorLog;
+$('closeErrorLog').onclick=()=>$('errorLogOverlay').classList.add('hidden');
+$('clearErrorLog').onclick=()=>{localStorage.removeItem('garage-errors');showErrorLog();};
 $('manualBtn').onclick=()=>$('manualOverlay').classList.remove('hidden');
 $('closeManual').onclick=()=>$('manualOverlay').classList.add('hidden');
 $('progressBtn').onclick=showProgress;
