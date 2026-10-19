@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Garage Session</title>
-<style>body{margin:0;background:#0b3a73;color:#f4f8fd;font-family:Arial,sans-serif;min-height:100vh}button,input{font-family:inherit}.update-banner{background:#ff8c00;color:#06203f;text-align:center;font-weight:800;font-size:15px;padding:10px 12px;letter-spacing:.02em}.wrap{max-width:640px;margin:0 auto;padding:18px}.kicker{color:#d6ebff;font-size:13px;letter-spacing:.08em;text-transform:uppercase}h1{font-size:28px;margin:6px 0 8px}.note{color:#d6ebff;margin:0 0 14px}.pick{width:100%;height:64px;border:0;border-radius:14px;background:#2f7de1;border-left:6px solid #ff8c00;color:#fff;font-size:20px;font-weight:800;margin:0 0 10px;text-align:left;padding:0 16px}.pick small{display:block;font-size:13px;font-weight:600;color:#e7f3ff}.card{background:#1457a8;border:1px solid #8ec5ff;border-radius:18px;padding:18px;margin-bottom:14px}.set{color:#d6ebff;font-weight:700;text-transform:uppercase;font-size:13px}.exercise{font-size:32px;margin:8px 0}.target{color:#d6ebff}.weight{font-size:64px;font-weight:700}.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.step{width:72px;height:72px;border:0;border-radius:14px;background:#3b8ef0;color:#fff;font-size:28px;font-weight:700}.reps,.daily input,.editrow input,.namebox{background:#e7f3ff;color:#0d2c52;border:0;border-radius:10px;font-weight:700}.reps{width:100%;margin-top:8px;font-size:42px;text-align:center;padding:8px}.daily input{width:100%;font-size:22px;padding:10px;margin-top:6px}.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.pad button{height:58px;border:0;border-radius:12px;background:#2f7de1;border-left:6px solid #ff8c00;color:#fff;font-size:22px;font-weight:700}.confirm,.go{width:100%;border:0;border-radius:14px;background:#9fd0ff;color:#06203f;font-weight:800}.confirm{margin-top:14px;height:64px;font-size:20px}.go{height:56px;font-size:18px;margin-top:8px}.link{margin-top:8px;width:100%;height:48px;border-radius:12px;border:1px solid #d6ebff;background:transparent;color:#fff;font-size:16px}.overlay{position:fixed;inset:0;background:rgba(6,24,58,.8);display:flex;align-items:flex-end;justify-content:center;padding:16px}.sheet{width:min(560px,100%);background:#1457a8;border-radius:20px;padding:22px 18px;border:1px solid #9fd0ff;max-height:86vh;overflow:auto}.timer{font-size:84px;font-weight:800;text-align:center}.hidden{display:none!important}.entry{border-bottom:1px solid #8ec5ff;padding:10px 0}.entry b{display:block}.editrow{display:flex;gap:8px;margin-top:8px}.editrow input{width:72px;text-align:center;font-size:16px;padding:8px}.namebox{flex:1;font-size:16px;padding:8px}.editrow button{border:0;border-radius:8px;padding:8px 10px;font-weight:700}.save{background:#1f7a4d;color:#fff}.del{background:#8c3a3a;color:#fff}.dayblock{margin:14px 0}.dayblock h2{font-size:18px;margin:0 0 8px}label{display:block;color:#d6ebff;font-size:13px;margin-top:8px}
+<style>body{margin:0;background:#0b3a73;color:#f4f8fd;font-family:Arial,sans-serif;min-height:100vh}button,input{font-family:inherit}.update-banner{background:#ff8c00;color:#06203f;text-align:center;font-weight:800;font-size:16px;padding:12px 14px;letter-spacing:.03em;border-bottom:4px solid #ff6a00}.wrap{max-width:640px;margin:0 auto;padding:18px}.kicker{color:#d6ebff;font-size:13px;letter-spacing:.08em;text-transform:uppercase}h1{font-size:28px;margin:6px 0 8px}.note{color:#d6ebff;margin:0 0 14px}.pick{width:100%;height:64px;border:0;border-radius:14px;background:#2f7de1;border-left:6px solid #ff8c00;color:#fff;font-size:20px;font-weight:800;margin:0 0 10px;text-align:left;padding:0 16px}.pick small{display:block;font-size:13px;font-weight:600;color:#e7f3ff}.card{background:#1457a8;border:1px solid #8ec5ff;border-radius:18px;padding:18px;margin-bottom:14px}.set{color:#d6ebff;font-weight:700;text-transform:uppercase;font-size:13px}.exercise{font-size:32px;margin:8px 0}.target{color:#d6ebff}.weight{font-size:64px;font-weight:700}.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.step{width:72px;height:72px;border:0;border-radius:14px;background:#3b8ef0;color:#fff;font-size:28px;font-weight:700}.reps,.daily input,.editrow input,.namebox{background:#e7f3ff;color:#0d2c52;border:0;border-radius:10px;font-weight:700}.reps{width:100%;margin-top:8px;font-size:42px;text-align:center;padding:8px}.daily input{width:100%;font-size:22px;padding:10px;margin-top:6px}.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.pad button{height:58px;border:0;border-radius:12px;background:#2f7de1;border-left:6px solid #ff8c00;color:#fff;font-size:22px;font-weight:700}.confirm,.go{width:100%;border:0;border-radius:14px;background:#9fd0ff;color:#06203f;font-weight:800}.confirm{margin-top:14px;height:64px;font-size:20px}.go{height:56px;font-size:18px;margin-top:8px}.link{margin-top:8px;width:100%;height:48px;border-radius:12px;border:1px solid #d6ebff;background:transparent;color:#fff;font-size:16px}.overlay{position:fixed;inset:0;background:rgba(6,24,58,.8);display:flex;align-items:flex-end;justify-content:center;padding:16px}.sheet{width:min(560px,100%);background:#1457a8;border-radius:20px;padding:22px 18px;border:1px solid #9fd0ff;max-height:86vh;overflow:auto}.timer{font-size:84px;font-weight:800;text-align:center}.hidden{display:none!important}.entry{border-bottom:1px solid #8ec5ff;padding:10px 0}.entry b{display:block}.editrow{display:flex;gap:8px;margin-top:8px}.editrow input{width:72px;text-align:center;font-size:16px;padding:8px}.namebox{flex:1;font-size:16px;padding:8px}.editrow button{border:0;border-radius:8px;padding:8px 10px;font-weight:700}.save{background:#1f7a4d;color:#fff}.del{background:#8c3a3a;color:#fff}.dayblock{margin:14px 0}.dayblock h2{font-size:18px;margin:0 0 8px}label{display:block;color:#d6ebff;font-size:13px;margin-top:8px}
 .chart-wrap{margin:16px 0;background:#0b3a73;border-radius:12px;padding:12px;min-height:220px}
 select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f3ff;color:#0d2c52;font-weight:700;border:0;margin:6px 0}
 .updown{display:flex;flex-direction:column;gap:2px}
@@ -8,10 +8,10 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
 </style><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="update-banner">Updated · v1.7 · Program export/import</div>
+<div class="update-banner">UPDATED · v1.7 · Program Export / Import</div>
 <div class="wrap" id="chooser">
   <div class="kicker">Garage session</div>
-  <h1>Which workout?</h1>
+  <h1 style="border-left:6px solid #ff8c00;padding-left:10px">Which workout?</h1>
   <p class="note">3 full-body days. Allow notifications when asked. Tap the Lift alert to come back. If you leave the app, also start the Clock timer. This page cannot open itself.</p>
   <section class="card daily">
     <div class="set">Today, optional</div>
@@ -25,8 +25,8 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   <div id="workoutList"></div>
   <button class="link" id="logBtn" type="button">Log</button>
   <button class="link" id="editBtn" type="button">Edit workouts</button>
-  <button class="link" id="exportProgramBtn" type="button">Export program</button>
-  <button class="link" id="importProgramBtn" type="button">Import program</button>
+  <button class="link" id="exportProgramBtn" type="button" style="border-color:#ff8c00;color:#ff8c00">Export program</button>
+  <button class="link" id="importProgramBtn" type="button" style="border-color:#ff8c00;color:#ff8c00">Import program</button>
   <input type="file" id="importProgramFile" accept=".json" style="display:none">
   <button class="link" id="progressBtn" type="button">Progress</button>
   <button class="link" id="manualBtn" type="button">User manual</button>
@@ -72,6 +72,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   </div>
   <h2 style="margin-top:20px">Change log</h2>
   <div style="line-height:1.45;font-size:15px">
+    <p><b>v1.7</b> — Export program and Import program buttons. Downloads / loads the current A/B/C day workouts as JSON. Orange banner strengthened.</p>
     <p><b>v1.6</b> — Lift progress chart locked to 220px height so it fits the page. No endless scroll.</p>
     <p><b>v1.5</b> — End workout button fixed. Progress button binding restored. Removed unreliable confirm dialogs. Works on PC, iPhone, and iPad.</p>
     <p><b>v1.4</b> — Exercise progress chart scales tightly to actual weights (5 lb steps). No more long empty scroll.</p>
@@ -296,7 +297,7 @@ $('editList').onclick=e=>{
     return;
   }
 };
-$('saveProgram').onclick=()=>{readEdit();save();renderWorkoutButtons();
+$('saveProgram').onclick=()=>{readEdit();save();renderWorkoutButtons();$('editOverlay').classList.add('hidden');};
 
 $('exportProgramBtn').onclick=()=>{
   const data = {
@@ -337,8 +338,6 @@ $('importProgramFile').onchange=e=>{
   reader.readAsText(file);
   e.target.value='';
 };
-
-$('editOverlay').classList.add('hidden');};
 $('resetProgram').onclick=()=>{PROGRAM=JSON.parse(JSON.stringify(DEFAULT_PROGRAM));save();renderWorkoutButtons();
 
   html += '<button class="link" type="button" id="cancelSwitch">Cancel</button>';
