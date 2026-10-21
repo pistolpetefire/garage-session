@@ -8,7 +8,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
 </style><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="update-banner">UPDATED · v1.8 · Error log + full test</div>
+<div class="update-banner">UPDATED · v1.8.1 · Workout buttons fixed</div>
 <div class="wrap" id="chooser">
   <div class="kicker">Garage session</div>
   <h1 style="border-left:6px solid #ff8c00;padding-left:10px">Which workout?</h1>
@@ -633,6 +633,12 @@ function updateResumeHints(){
     }
   });
 }
+
+
+document.getElementById('chooser').onclick=e=>{
+  const b=e.target.closest('button');
+  if(b&&b.dataset.name) start(b.dataset.name);
+};
 
 renderWorkoutButtons();
 </script>
