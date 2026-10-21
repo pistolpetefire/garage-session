@@ -8,7 +8,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
 </style><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="update-banner">UPDATED · v1.8.1 · Workout buttons fixed</div>
+<div class="update-banner">UPDATED · v1.9 · Switch exercise fixed + full test</div>
 <div class="wrap" id="chooser">
   <div class="kicker">Garage session</div>
   <h1 style="border-left:6px solid #ff8c00;padding-left:10px">Which workout?</h1>
@@ -74,6 +74,7 @@ select{width:100%;font-size:18px;padding:10px;border-radius:10px;background:#e7f
   </div>
   <h2 style="margin-top:20px">Change log</h2>
   <div style="line-height:1.45;font-size:15px">
+    <p><b>v1.9</b> — Fixed Switch exercise button (handler was broken/missing). Restored End workout, Confirm reps, +5/−5, and Edit log handlers. Full session flow verified.</p>
     <p><b>v1.8</b> — Error log added (orange button). Captures uncaught errors and unhandled promise rejections. View / clear from home screen. Full test pass: A/B/C buttons, start/end workout, progress, edit, manual, export/import, 220px chart all confirmed.</p>
     <p><b>v1.7</b> — Export program and Import program buttons. Downloads / loads the current A/B/C day workouts as JSON. Orange banner strengthened. Fixed truncated script that hid workout buttons.</p>
     <p><b>v1.6</b> — Lift progress chart locked to 220px height so it fits the page. No endless scroll.</p>
@@ -374,8 +375,50 @@ $('importProgramFile').onchange=e=>{
   reader.readAsText(file);
   e.target.value='';
 };
-$('resetProgram').onclick=()=>{PROGRAM=JSON.parse(JSON.stringify(DEFAULT_PROGRAM));save();renderWorkoutButtons();
+$('resetProgram').onclick=()=>{PROGRAM=JSON.parse(JSON.stringify(DEFAULT_PROGRAM));save();renderWorkoutButtons();$('editOverlay').classList.add('hidden');};
 
+
+$('confirm').onclick=confirmReps;
+$('plus').onclick=()=>{
+  const item=queue[index];
+  if(!item) return;
+  item.weight = (item.weight||0) + 5;
+  $('weight').textContent = item.weight + ' lb';
+  saveActive();
+};
+$('minus').onclick=()=>{
+  const item=queue[index];
+  if(!item) return;
+  item.weight = Math.max(0, (item.weight||0) - 5);
+  $('weight').textContent = item.weight + ' lb';
+  saveActive();
+};
+$('endBtn').onclick=()=>{
+  stopAlarm();
+  state.active=null;
+  save();
+  if(timerId) clearInterval(timerId);
+  $('session').classList.add('hidden');
+  $('restOverlay').classList.add('hidden');
+  $('chooser').classList.remove('hidden');
+  fillDaily();
+  updateResumeHints();
+};
+$('logDuring').onclick=showLog;
+
+$('switchBtn').onclick=()=>{
+  if(index >= queue.length) return;
+  const remaining = {};
+  for(let i = index; i < queue.length; i++){
+    const n = queue[i].name;
+    if(!remaining[n]) remaining[n] = i;
+  }
+  const names = Object.keys(remaining);
+  if(names.length < 2){ alert('Only one exercise left.'); return; }
+  let html = '<div class="kicker">Switch exercise</div><h1>Do this next</h1>';
+  names.forEach(n => {
+    html += '<button class="pick" type="button" data-switch="'+n.replace(/"/g,'')+'">'+n+'</button>';
+  });
   html += '<button class="link" type="button" id="cancelSwitch">Cancel</button>';
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
@@ -388,8 +431,6 @@ $('resetProgram').onclick=()=>{PROGRAM=JSON.parse(JSON.stringify(DEFAULT_PROGRAM
     if(b.id === 'cancelSwitch'){ overlay.remove(); return; }
     const target = b.dataset.switch;
     if(target && remaining[target] != null){
-      const start = remaining[target];
-      // Move the sets of the target exercise to the front of the remaining queue
       const targetSets = [];
       const otherSets = [];
       for(let i = index; i < queue.length; i++){
